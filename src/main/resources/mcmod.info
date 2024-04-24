@@ -1,0 +1,16 @@
+[
+  {
+    "modid": "mlservermodchecker",
+    "name": "MLServer Mod Checker",
+    "description": "Mod checker for MonsterLifeServer.",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "https://wiki.mlserver.xyz/?p=20",
+    "updateUrl": "",
+    "authorList": ["Monster2408"],
+    "credits": "The Forge and FML guys, for making this example",
+    "logoFile": "assets/mlservermodchecker/logo.png",
+    "screenshots": [],
+    "dependencies": []
+  }
+]

@@ -1,0 +1,3 @@
+// コンフィグ
+config.mlservermodchecker.config.general=全般
+config.mlservermodchecker.config.whitelistMods=ホワイトリストMOD

@@ -1,0 +1,3 @@
+// Config
+config.mlservermodchecker.config.general=Localized General Category
+config.mlservermodchecker.config.whitelistMods=Whitelist Mods
