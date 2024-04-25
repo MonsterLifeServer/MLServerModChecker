@@ -1,6 +1,7 @@
 package xyz.mlserver.mod.mlservermodchecker;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModContainer;
 
@@ -11,9 +12,11 @@ import javax.net.ssl.X509TrustManager;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
@@ -27,6 +30,9 @@ import java.util.Map;
 public class MLServerModCheckerWhitelistMods {
 
     public static final String json_file = "https://wiki.mlserver.xyz/api/whitelist_mods/whitelist_mods.json";
+    public static final String saveDir = "./config/mlservermodchecker/";
+    public static final String whitelistFileName = "whitelist_mods.json";
+    public static final String noWhitelistFileName = "export_no_whitelist_mods.json";
 
     public static List<String> getWhitelistMods() {
         // mod idのフォルダにJsonファイルを生成する。
@@ -70,12 +76,9 @@ public class MLServerModCheckerWhitelistMods {
     }
 
     private static ModList getModList() throws IOException {
-        String fileURL = "https://wiki.mlserver.xyz/api/whitelist_mods/whitelist_mods.json";
-        String saveDir = "./config/mlservermodchecker/";
-        String fileName = "whitelist_mods.json";
-        downloadFile(fileURL, saveDir, fileName);
+        downloadFile(json_file, saveDir, whitelistFileName);
 
-        File file = new File("./config/mlservermodchecker/whitelist_mods.json");
+        File file = new File(saveDir + whitelistFileName);
         if (file.exists()) {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(file.toURI().toURL().openStream()));
             String line;
@@ -143,13 +146,40 @@ public class MLServerModCheckerWhitelistMods {
     }
 
     private static class ModList {
-        private List<String> data;
+        private final List<String> data;
 
         public ModList(List<String> data) {
             this.data = data;
         }
 
         public List<String> getData() {
+            return data;
+        }
+    }
+
+    public static void exportNoWhitelistMods(String json_text) {
+        String file_path = saveDir + noWhitelistFileName;
+        // ファイルが存在したら削除
+        File file = new File(file_path);
+        if (file.exists()) {
+            file.delete();
+        }
+        // jsonに変換してファイルに書き込み
+        try (Writer writer = new FileWriter(file_path)) {
+            writer.write(json_text);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static class NoModList {
+        private final List<Map<String, String>> data;
+
+        public NoModList(List<Map<String, String>> data) {
+            this.data = data;
+        }
+
+        public List<Map<String, String>> getData() {
             return data;
         }
     }

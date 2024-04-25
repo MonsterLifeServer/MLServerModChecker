@@ -64,84 +64,33 @@ public class ModCheckCmd extends CommandBase {
             TextComponentString comp;
             comp = new TextComponentString("ホワイトリストに登録されていないMod:");
             player.sendMessage(comp);
-            Style style;
+            StringBuilder json_text = new StringBuilder("{" +
+                    "\"data\": [");
+            boolean is_first = true;
             for (ModContainer mod : list) {
                 comp = new TextComponentString("- " + mod.getName() + "(" + mod.getModId() + ") - バージョン: " + mod.getVersion());
                 player.sendMessage(comp);
+                if (!is_first) {
+                    json_text.append(",");
+                }
+                json_text
+                        .append("{")
+                        .append("\"mod_id\": \"").append(mod.getModId()).append("\",")
+                        .append("\"mod_name\": \"").append(mod.getName()).append("\",")
+                        .append("\"mod_version\": \"").append(mod.getVersion()).append("\"")
+                        .append("}");
+                is_first = false;
             }
+            json_text.append("]" + "}");
+
+            MLServerModCheckerWhitelistMods.exportNoWhitelistMods(json_text.toString());
+
             comp = new TextComponentString("");
             player.sendMessage(comp);
-            String message = "ホワイトリストに登録されていないModがあります。クリックで許可申請を送信可能です。(強制するものではありませんがMLServerでは禁止されています。)";
+            String message = "ホワイトリストに登録されていないModがあります。./config/mlservermodchecker/no_whitelist_mods.jsonに保存されました。";
             comp = new TextComponentString(message);
-            style = new Style().setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/modcheck sendrequest") {
-                @Override
-                public Action getAction() {
-                    //custom behavior
-                    return Action.RUN_COMMAND;
-                }
-            });
-            comp.setStyle(style);
             // 3s後にメッセージを表示
             player.sendMessage(comp);
-        } else if (args[0].equalsIgnoreCase("sendrequest")) {
-            List<ModContainer> list = MLServerModCheckerWhitelistMods.getNoWhitelistMods();
-            if (list.isEmpty()) {
-                String message = "ホワイトリストに登録されていないModはありません。";
-                TextComponentString comp = new TextComponentString(message);
-                player.sendMessage(comp);
-                return;
-            }
-            String message = "{" +
-                    "    \"data\": [";
-            for (ModContainer mod : list) {
-                message +=
-                        "        {" +
-                        "            \"modId\": \"" + mod.getModId() + "\"," +
-                        "            \"modName\": \"" + mod.getName() + "\"," +
-                        "            \"modVersion\": \"" + mod.getVersion() + "\"" +
-                        "        },";
-            }
-            message += "    ]" +
-                    "}";
-            try {
-                String result = callWebAPI(message);
-                System.out.println(result);
-                TextComponentString comp = new TextComponentString("許可申請を送信しました。");
-                player.sendMessage(comp);
-            } catch (IOException e) {
-                e.printStackTrace();
-                TextComponentString comp = new TextComponentString("許可申請の送信に失敗しました。");
-                player.sendMessage(comp);
-            }
-
         }
-    }
-
-    private static final String WEB_API_ENDPOINT = "https://wiki.mlserver.xyz/api/whitelist_mods/request.php";
-
-    public String callWebAPI(String postJson) throws IOException {
-
-        final Map<String, String> httpHeaders = new LinkedHashMap<String, String>();
-        final String resultStr = doPost(WEB_API_ENDPOINT, "UTF-8", httpHeaders, postJson);
-
-        return resultStr;
-    }
-
-    public String doPost(String url, String encoding, Map<String, String> headers, String jsonString) throws IOException {
-        final okhttp3.MediaType mediaTypeJson = okhttp3.MediaType.parse("application/json; charset=" + encoding);
-
-        final RequestBody requestBody = RequestBody.create(mediaTypeJson, jsonString);
-
-        final Request request = new Request.Builder()
-                .url(url)
-                .headers(Headers.of(headers))
-                .post(requestBody)
-                .build();
-
-        final OkHttpClient client = new OkHttpClient.Builder()
-                .build();
-        final Response response = client.newCall(request).execute();
-        final String resultStr = response.body().string();
-        return resultStr;
     }
 }
